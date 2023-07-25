@@ -9,6 +9,7 @@ const url2 = "https://osu-pps.com/#/osu/maps";
 const url3 = "https://toiletbril.github.io/cookiezi-clicker/";
 const url4 = "https://www.youtube.com/watch?v=4ty0VzIagW4";
 const url5 = "";
-const cssSelector = "#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span:nth-child(2)";
-utils_1.default.getContents(url, cssSelector);
+const cssSelector = "#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span.a-offscreen";
+// utils.getContents(url, cssSelector);
+utils_1.default.isTimeout();
 //# sourceMappingURL=index.js.map
