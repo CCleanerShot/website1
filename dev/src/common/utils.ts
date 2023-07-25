@@ -6,9 +6,12 @@ import fs from "fs"
 import { ConfigData } from "./structures/classes/configdata";
 import { json } from "stream/consumers";
 
-
+const CONFIG_PATH = "./data/config.json"
 const utils = {
+    configData: new ConfigData,
     getContents: function (url: string, cssSelector?: string) {},
+    loadConfig: function(configPath?: string) {},
+    saveConfig: function(configPath?: string) {},
     isTimeout: function() {},
 }
 
@@ -44,17 +47,39 @@ utils.getContents = (url: string, cssSelector?: string) => {
     });
 }
 
-utils.isTimeout = () => {
-    const foundData = new ConfigData;
-    fs.readFile('../../data/config.json', (err, data) => {
-        // if(data) {
-        //     const parse = JSON.parse(data);
-        //     foundData.lastRequestTime = data.lastRequestTime
-        // }
+utils.loadConfig = (configPath = CONFIG_PATH) => {
+    fs.readFile(configPath, "utf-8", (err, data) => {
+        const foundData = new ConfigData();
+        if(data) {
+            const parse = JSON.parse(data);
+            foundData.lastRequestTime = parse.lastRequestTime;
+            foundData.lastRequestWindow = parse.lastRequestWindow;
+            foundData.requests = parse.requests;
+            foundData.requestsMax = parse.requestsMax;
+        }
 
-        console.log("data");
-        console.log(data);
-    })
+        if(foundData.needsResetting())
+            foundData.reset();
+
+        utils.configData = foundData;
+    });
+}
+
+utils.saveConfig = (configPath = CONFIG_PATH) => {
+    const stringData = JSON.stringify(utils.configData);
+    fs.writeFile(configPath, stringData, (err) => {
+        if(err)
+            console.warn(`Failed to save at ${CONFIG_PATH}.`);
+    });
+}
+
+utils.isTimeout = () => {
+    if(utils.configData.needsResetting())
+        utils.configData.reset();
+
+        const requests = utils.configData.requests
+        const requestsMax = utils.configData.requestsMax
+    return requests <= requestsMax
 }
 
 export = utils;

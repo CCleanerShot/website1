@@ -7,4 +7,5 @@ const url4 = "https://www.youtube.com/watch?v=4ty0VzIagW4";
 const url5 = "";
 const cssSelector = "#corePriceDisplay_desktop_feature_div > div.a-section.a-spacing-none.aok-align-center > span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay > span.a-offscreen";
 // utils.getContents(url, cssSelector);
-utils.isTimeout()
+utils.loadConfig()
+utils.saveConfig();
