@@ -1,2 +1,2 @@
-src/node_modules/**
-src/data/.env
+node/node_modules/**
+data/**
