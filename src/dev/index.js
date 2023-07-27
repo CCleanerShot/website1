@@ -1,12 +1,11 @@
-import { load } from "cheerio";
-import axios from "axios";
-import fs from "fs"
+const { load } = require("cheerio");
+const axios = require("axios");
+const fs = require("fs");
 
 const CONFIG_PATH = "../../data/config.json"
 
-
 // GLOSSARY: 
-// ITEMDATA TYPE
+// ITEMDATA CLASS
 // USERDATA CLASS
 // CONFIGDATA CLASS
 // UTILS OBJECT
@@ -14,15 +13,20 @@ const CONFIG_PATH = "../../data/config.json"
 // INDEX.JS
 
 
-// ITEMDATA TYPE
-// ITEMDATA TYPE
-// ITEMDATA TYPE
+// ITEMDATA CLASS
+// ITEMDATA CLASS
+// ITEMDATA CLASS
 
-type ItemData = {
-    startDate: number,
-    url: string,
-    name: string,
-    prices: number[],
+class ItemData {
+    constructor(
+    startDate,
+    url,
+    name,
+    ) {
+        this.startDate = startDate;
+        this.url = url;
+        this.name = name;
+    }
 } 
 
 // USERDATA CLASS
@@ -30,14 +34,10 @@ type ItemData = {
 // USERDATA CLASS
 
 class UserData {
-    username: string;
-    password: string;
-    items: ItemData[];
-
     constructor(
-    username: string,
-    password: string,
-    items: ItemData[] = []
+    username,
+    password,
+    items,
     ) {
         this.username = username;
         this.password = password;
@@ -50,16 +50,11 @@ class UserData {
 // CONFIGDATA CLASS
 
 class ConfigData {
-    lastRequestTime: number;
-    lastRequestWindow: number;
-    requestsMax: number;
-    requests: number;
-
     constructor(
-    lastRequestTime: number = Date.now(),
-    lastRequestWindow: number = 60,
-    requestsMax: number = 6,
-    requests: number = 0,
+    lastRequestTime = Date.now(),
+    lastRequestWindow = 60,
+    requestsMax = 6,
+    requests = 0,
     ) {
         this.lastRequestTime = lastRequestTime;
         this.lastRequestWindow = lastRequestWindow;
@@ -91,17 +86,17 @@ class ConfigData {
 
 const utils = {
     configData: new ConfigData,
-    getContents: function (url: string, cssSelector?: string) {},
-    loadFile: function(configPath: string): any {},
-    saveFile: function(configPath: string, contents: string): any {},
-    loadConfig: function(configPath?: string) {},
-    saveConfig: function(configPath?: string) {},
-    loadUsers: function(configPath?: string) {},
-    saveUsers: function(configPath?: string) {},
+    getContents: function (url, cssSelector) {},
+    loadFile: function(configPath) {},
+    saveFile: function(configPath, contents) {},
+    loadConfig: function(configPath) {},
+    saveConfig: function(configPath) {},
+    loadUsers: function(configPath) {},
+    saveUsers: function(configPath) {},
     isTimeout: function() {},
 }
 
-utils.getContents = (url: string, cssSelector?: string) => {
+utils.getContents = (url, cssSelector) => {
     const splitURL = url.split(/\/+/)
     const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
     const paths = splitURL.slice(2).join("/") + "/"
@@ -129,7 +124,7 @@ utils.getContents = (url: string, cssSelector?: string) => {
     return contents;
 }
 
-utils.loadFile = (filePath: string): Promise<JSON | String> => {
+utils.loadFile = (filePath) => {
     return new Promise((res, rej) => {
         fs.readFile(filePath, "utf-8", (err, data) => {
             if(data)
@@ -140,7 +135,7 @@ utils.loadFile = (filePath: string): Promise<JSON | String> => {
     })
 }
 
-utils.saveFile = (filePath: string, contents: string): Promise<String> => {
+utils.saveFile = (filePath, contents) => {
     return new Promise((res, rej) => {
         fs.writeFile(filePath, contents, (err) => {
             if(err)
@@ -186,11 +181,11 @@ utils.isTimeout = () => {
 // NETWORKGRABBER OBJECT
 
 const networkgrabber = {
-    getPrice: function(url: string, cssSelector: string) {},
+    getPrice: function(url, cssSelector) {},
 }
 
-networkgrabber.getPrice = (url: string, cssSelector: string) => {
-    const item: any = utils.getContents(url, cssSelector);
+networkgrabber.getPrice = (url, cssSelector) => {
+    const item = utils.getContents(url, cssSelector);
     const price = item.attr("value");
 }
 

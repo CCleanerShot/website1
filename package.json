@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && npx tsc && mkdir ./dist/web/ && cp ./src/web/*.html ./dist/web/",
+    "makehtml": "mkdir ./dist/web/ && cp ./src/web/*.html ./dist/web/",
+    "usebrowserify": "browserify src/dev/index.js -o dist/dev/index.js",
+    "build": "rimraf dist && npm run makehtml && npm run usebrowserify",
     "prestart": "npm run build",
     "start": "node dist/dev/index.js",
     "preserve": "npm run build",
-    "serve": "npx tsc --watch & nodemon ./dist/dev/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
+    "serve": "nodemon ./dist/dev/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
   },
   "author": "",
   "license": "ISC",
