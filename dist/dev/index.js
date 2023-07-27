@@ -11,13 +11,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const cheerio_1 = require("cheerio");
 const axios_1 = __importDefault(require("axios"));
 const fs_1 = __importDefault(require("fs"));
-const configdata_1 = require("./structures/classes/configdata");
-const CONFIG_PATH = "./data/config.json";
+const CONFIG_PATH = "../../data/config.json";
+// USERDATA CLASS
+// USERDATA CLASS
+// USERDATA CLASS
+class UserData {
+    constructor(username, password, items = []) {
+        this.username = username;
+        this.password = password;
+        this.items = items;
+    }
+}
+// CONFIGDATA CLASS
+// CONFIGDATA CLASS
+// CONFIGDATA CLASS
+class ConfigData {
+    constructor(lastRequestTime = Date.now(), lastRequestWindow = 60, requestsMax = 6, requests = 0) {
+        this.lastRequestTime = lastRequestTime;
+        this.lastRequestWindow = lastRequestWindow;
+        this.requestsMax = requestsMax;
+        this.requests = requests;
+    }
+    reset() {
+        this.lastRequestTime = Date.now();
+        this.requests = 0;
+    }
+    needsResetting() {
+        if (this.lastRequestTime - Date.now() > this.lastRequestWindow) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    needsTimeout() {
+        return this.requests <= this.requestsMax;
+    }
+}
+// UTILS OBJECT
+// UTILS OBJECT
+// UTILS OBJECT
 const utils = {
-    configData: new configdata_1.ConfigData,
+    configData: new ConfigData,
     getContents: function (url, cssSelector) { },
     loadFile: function (configPath) { },
     saveFile: function (configPath, contents) { },
@@ -45,7 +84,7 @@ utils.getContents = (url, cssSelector) => {
         else
             return $(cssSelector).attr("value");
     }).catch((rej) => {
-        console.log(`SERVER ERROR CODE: ${rej.response.status}`);
+        console.log(`SERVER ERROR CODE: ${rej}`);
     });
     return contents;
 };
@@ -71,7 +110,7 @@ utils.saveFile = (filePath, contents) => {
 };
 utils.loadConfig = (configPath = CONFIG_PATH) => __awaiter(void 0, void 0, void 0, function* () {
     const data = yield utils.loadFile(configPath);
-    const foundData = new configdata_1.ConfigData();
+    const foundData = new ConfigData();
     if (!data) {
         foundData.lastRequestTime = data.lastRequestTime;
         foundData.lastRequestWindow = data.lastRequestWindow;
@@ -93,5 +132,21 @@ utils.isTimeout = () => {
     const requestsMax = utils.configData.requestsMax;
     return requests <= requestsMax;
 };
-module.exports = utils;
-//# sourceMappingURL=utils.js.map
+// NETWORKGRABBER OBJECT
+// NETWORKGRABBER OBJECT
+// NETWORKGRABBER OBJECT
+const networkgrabber = {
+    getPrice: function (url, cssSelector) { },
+};
+networkgrabber.getPrice = (url, cssSelector) => {
+    const item = utils.getContents(url, cssSelector);
+    const price = item.attr("value");
+};
+// INDEX.JS
+// INDEX.JS
+// INDEX.JS
+const url = "https://www.amazon.com/Anker-PowerCore-Technology-High-Capacity-Compatible/dp/B07S829LBX/ref=sr_1_4?crid=1A9378Y50Y1TX&keywords=battery%2Bpacks%2Banker&qid=1690219592&sprefix=battery%2Bpacks%2Banker%2Caps%2C107&sr=8-4&th=1";
+const cssSelector = "#attach-base-product-price";
+console.log("hi!");
+utils.getContents(url, cssSelector);
+//# sourceMappingURL=index.js.map

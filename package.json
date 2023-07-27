@@ -6,9 +6,9 @@
   "scripts": {
     "build": "rimraf dist && npx tsc && mkdir ./dist/web/ && cp ./src/web/*.html ./dist/web/",
     "prestart": "npm run build",
-    "start": "node dist/index.js",
+    "start": "node dist/dev/index.js",
     "preserve": "npm run build",
-    "serve": "npx tsc --watch & nodemon ./dist/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
+    "serve": "npx tsc --watch & nodemon ./dist/dev/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +18,7 @@
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.1",
     "tailwindcss": "^3.3.3",
+    "ts-loader": "^9.4.4",
     "typescript": "^5.1.6"
   },
   "dependencies": {

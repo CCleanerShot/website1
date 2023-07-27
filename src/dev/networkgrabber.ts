@@ -1,5 +1,4 @@
 import utils from "./common/utils";
-import { CheerioAPI } from "cheerio";
 
 const networkgrabber = {
     getPrice: function(url: string, cssSelector: string) {},
