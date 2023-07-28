@@ -4,25 +4,16 @@
   "description": "test website i make in 1 week",
   "main": "index.js",
   "scripts": {
-    "makedist": "mkdir ./dist",
-    "makehtml": "mkdir ./dist/web/ && cp ./src/web/*.html ./dist/web/",
-    "usebrowserify": "browserify ./src/dev/index.js -o ./dist/dev/index.js",
-    "build": "rimraf dist && npm run makedist && npm run makehtml && npm run usebrowserify",
-    "prestart": "npm run build",
-    "start": "node dist/dev/index.js",
+    "makedist": "mkdir ./dist && mkdir ./dist/web && mkdir ./dist/dev",
+    "makehtml": "cp ./src/web/*.html ./dist/web/",
+    "makedev": "cp ./src/dev/*.js ./dist/dev/",
+    "build": "rimraf dist && npm run makedist && npm run makehtml && npm run makedev",
     "preserve": "npm run build",
-    "serve": "nodemon ./dist/dev/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
+    "serve": "npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "axios": "^1.4.0",
-    "cheerio": "^1.0.0-rc.12",
-    "express": "^4.18.2",
-    "fs": "^0.0.1-security"
-  },
   "devDependencies": {
-    "nodemon": "^3.0.1",
     "rimraf": "^5.0.1",
     "tailwindcss": "^3.3.3"
   }
