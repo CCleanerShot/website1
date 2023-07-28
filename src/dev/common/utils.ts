@@ -1,6 +1,6 @@
 import { load } from "cheerio";
 import axios from "axios";
-// import fs from "fs"
+import fs from "fs"
 
 import { ConfigData } from "./structures/classes/configdata";
 

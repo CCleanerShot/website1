@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const cheerio_1 = require("cheerio");
 const axios_1 = __importDefault(require("axios"));
-// import fs from "fs"
+const fs_1 = __importDefault(require("fs"));
 const configdata_1 = require("./structures/classes/configdata");
 const CONFIG_PATH = "../../data/config.json";
 const utils = {
@@ -51,7 +51,7 @@ utils.getContents = (url, cssSelector) => {
 };
 utils.loadFile = (filePath) => {
     return new Promise((res, rej) => {
-        fs.readFile(filePath, "utf-8", (err, data) => {
+        fs_1.default.readFile(filePath, "utf-8", (err, data) => {
             if (data)
                 res(data);
             if (err)
@@ -61,7 +61,7 @@ utils.loadFile = (filePath) => {
 };
 utils.saveFile = (filePath, contents) => {
     return new Promise((res, rej) => {
-        fs.writeFile(filePath, contents, (err) => {
+        fs_1.default.writeFile(filePath, contents, (err) => {
             if (err)
                 rej(err);
             else
