@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && npx tsc && mkdir ./dist/web/ && cp ./src/web/*.html ./dist/web/",
+    "makehtml": "mkdir ./dist/frontend/web/ && cp ./src/frontend/web/*.html ./dist/frontend/web/",
+    "build": "rimraf dist && npx tsc && npm run makehtml",
     "prestart": "npm run build",
-    "start": "node dist/dev/index.js",
+    "backend": "node dist/dev/backend/index.js",
+    "frontend": "live-server dist/dev/frontend/",
+    "start": "npm run backend && npm run frontend",
     "preserve": "npm run build",
     "serve": "npx tsc --watch & nodemon ./dist/dev/index.js & npx tailwindcss -i ./src/web/styles.css -o ./dist/web/styles.css --watch"
   },

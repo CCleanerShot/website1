@@ -18,3 +18,5 @@ localserver.start = () => {
         console.log(`Listening on port ${PORT}.`)
     });
 }
+
+export = localserver
