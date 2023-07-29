@@ -1,3 +1,5 @@
+console.log("hello")
+
 import { load } from "cheerio";
 import axios from "axios";
 import fs from "fs"
