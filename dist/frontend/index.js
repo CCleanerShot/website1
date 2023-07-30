@@ -1,33 +1,34 @@
-const baseURL = "https://98.57.186.27:3000/"
+const baseURL = "http://localhost:3000/"
 const paths = "/"
 const headers = {}
+
+const HEADER = document.getElementById("header");
+const SUBMIT_INPUT = document.getElementById("submit-input");
+const SUBMIT_BUTTON = document.getElementById("submit-button");
 const AxiosInstance = window.axios.create({
     baseURL: baseURL,
     timeout: 5000,
 });
 
-const doFetch = (paths = "") => {
-    const options = {}
+function doFetchPrice (paths = "", productURL = "") {
+    console.log(`sending ${productURL}...`);
+    const data = {
+        productURL: productURL
+    };
     
-    AxiosInstance.get(
-        paths, 
-        {headers: headers},
-    ).then((res) => {
-        console.log(res);
+    AxiosInstance.post(paths, data)
+    .then((res) => {
+        console.log(res)
     }).catch(rej => {
         console.log(rej);
     })
-
-
 }
 
-const button = document.createElement("button");
-button.innerHTML = "Im a button!";
-button.onclick = doFetch();
-button.style.border = "1px solid red"
 
-const header = document.getElementById("header");
-header.innerHTML = "New Words!"
-header.appendChild(button);
+
+SUBMIT_BUTTON.onclick = () => { doFetchPrice("findItem", SUBMIT_INPUT.value); };
+SUBMIT_BUTTON.style.border = "1px solid red"
+
+HEADER.innerHTML = "Header Words!";
 
 console.log("Hello from frontend!");

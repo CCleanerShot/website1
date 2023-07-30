@@ -1,4 +1,4 @@
-import { load } from "cheerio";
+import { CheerioAPI, load } from "cheerio";
 import axios from "axios";
 import fs from "fs"
 
@@ -8,7 +8,7 @@ const CONFIG_PATH = "../../data/config.json"
 
 const utils = {
     configData: new ConfigData,
-    getContents: function (url: string, cssSelector?: string) {},
+    getContents: function (url: string, cssSelector?: string): any{},
     loadFile: function(configPath: string): any {},
     saveFile: function(configPath: string, contents: string): any {},
     loadConfig: function(configPath?: string) {},
@@ -27,23 +27,28 @@ utils.getContents = (url: string, cssSelector?: string) => {
         timeout: 5000,
     });
 
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-    }
-    const contents = AxiosInstance.get(
-        paths, 
-        {headers: headers},
-    ).then((res) => {
-        const $ = load(res.data);
-        if(!cssSelector)
-            return $;
-        else
-            return $(cssSelector).attr("value");
-    }).catch((rej) => {
-        console.log(`SERVER ERROR CODE: ${rej}`);
-    });
+    return new Promise((res, rej) => {
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        }
+        const contents = AxiosInstance.get(
+            paths, 
+            {headers: headers},
+        ).then((res) => {
+            console.log("got a response!")
+            const $ = load(res.data);
+            return $(cssSelector).prop("innerHTML") || false
+        }).catch((rej) => {
+            return false;
+        });
+    
+        if(contents) {
+            res(contents)
+        } else {
+            rej("Unable to get contents. Perhaps an invalid link? Otherwise, possibly the amazon item page has changed.")
+        }
+    })
 
-    return contents;
 }
 
 utils.loadFile = (filePath: string): Promise<JSON | String> => {

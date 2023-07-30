@@ -35,19 +35,24 @@ utils.getContents = (url, cssSelector) => {
         baseURL: baseURL,
         timeout: 5000,
     });
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-    };
-    const contents = AxiosInstance.get(paths, { headers: headers }).then((res) => {
-        const $ = (0, cheerio_1.load)(res.data);
-        if (!cssSelector)
-            return $;
-        else
-            return $(cssSelector).attr("value");
-    }).catch((rej) => {
-        console.log(`SERVER ERROR CODE: ${rej}`);
+    return new Promise((res, rej) => {
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        };
+        const contents = AxiosInstance.get(paths, { headers: headers }).then((res) => {
+            console.log("got a response!");
+            const $ = (0, cheerio_1.load)(res.data);
+            return $(cssSelector).prop("innerHTML") || false;
+        }).catch((rej) => {
+            return false;
+        });
+        if (contents) {
+            res(contents);
+        }
+        else {
+            rej("Unable to get contents. Perhaps an invalid link? Otherwise, possibly the amazon item page has changed.");
+        }
     });
-    return contents;
 };
 utils.loadFile = (filePath) => {
     return new Promise((res, rej) => {
