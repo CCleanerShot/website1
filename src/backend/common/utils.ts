@@ -1,4 +1,4 @@
-import { CheerioAPI, load } from "cheerio";
+import { Cheerio, CheerioAPI, load } from "cheerio";
 import axios from "axios";
 import fs from "fs";
 
@@ -9,12 +9,14 @@ import { UserData } from "./structures/classes/userdata";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
-
+const CSS_SELECTOR_NAME = "span#productTitle";
+const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
 interface UtilInterface {
     configData: ConfigData;
     itemData: AmazonItem[];
     userData: UserData[];
-    getContents(url: string, cssSelector?: string): Promise<string>;
+    getBaseContents(url: string): Promise<CheerioAPI>;
+    getSpecificContents(url: string, cssSelector?: string): Promise<string>;
     convertToJSON(input: string): Object;
     loadFile(path: string): Promise<string>;
     saveFile(path: string, contents: string): any;
@@ -31,9 +33,10 @@ interface UtilInterface {
     addUser(user: UserData): void;
     isTimeout(): boolean;
 
+    fetchAmazonItemFromSite(url: string): Promise<AmazonItem>;
     fetchAmazonPrice(url: string): Promise<number>;
-    updateAmazonPrice(item: AmazonItem): boolean;
-    updateAmazonPrices(): void;
+    updateAmazonItem(item: AmazonItem): boolean;
+    updateAmazonItems(): void;
 }
 
 const utils: UtilInterface = {
@@ -42,7 +45,36 @@ const utils: UtilInterface = {
     userData: [] as UserData[],
 
 
-    getContents: function (url: string, cssSelector?: string): Promise<string> {
+    getBaseContents: (url: string): Promise<CheerioAPI> => {
+        const splitURL = url.split(/\/+/)
+        const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
+        const paths = splitURL.slice(2).join("/") + "/"
+        const AxiosInstance = axios.create({
+            baseURL: baseURL,
+            timeout: 5000,
+        });
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        }
+
+        return new Promise((res, rej) => {
+            AxiosInstance.get(
+                paths, 
+                {headers: headers},
+            ).then((GETRes) => {
+                console.log("got a response!")
+                const $ = load(GETRes.data);
+                if($)
+                    res($)
+                else
+                    rej(undefined)
+            }).catch((GETRej) => {
+                rej("GET")
+            });
+        });
+    },
+
+    getSpecificContents: (url: string, cssSelector?: string): Promise<string> => {
         const splitURL = url.split(/\/+/)
         const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
         const paths = splitURL.slice(2).join("/") + "/"
@@ -218,19 +250,37 @@ const utils: UtilInterface = {
         return requests <= requestsMax;
     },
 
+    fetchAmazonItemFromSite: (url: string): Promise<AmazonItem> => {
+        return new Promise((res, rej) => {
+            utils.getBaseContents(url)
+            .then($ => {
+                const name = $(CSS_SELECTOR_NAME).prop("innerHTML");
+                const price_ = $(CSS_SELECTOR_PRICE).prop("innerHTML");
+
+                if(!name || !price_) {
+                    rej("COULD NOT FIND NAME AND/OR PRICE!");
+                } else {
+                    const price = parseFloat(price_)
+                    res(new AmazonItem(name || "CANNOT FIND", url, [price]))
+                }
+            }).catch(CheerioRej => {
+                return undefined;
+            })
+        })
+    },
+
     fetchAmazonPrice: (url: string): Promise<number> => {
         return new Promise((res, rej) => {
-            utils.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first")
+            utils.getSpecificContents(url, CSS_SELECTOR_PRICE)
             .then(price => {
                 res(parseFloat(price));
             }).catch(contentsRej => {
                 rej(contentsRej);
             })
         })
-
     },
 
-    updateAmazonPrice: (item: AmazonItem): boolean => {
+    updateAmazonItem: (item: AmazonItem): boolean => {
         const oneday = 86400000;
         const now = Date.now();
 
@@ -248,7 +298,7 @@ const utils: UtilInterface = {
         return false;
     },
 
-    updateAmazonPrices: () => {
+    updateAmazonItems: () => {
         const oneday = 86400000;
         const now = Date.now();
 

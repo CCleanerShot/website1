@@ -35,13 +35,13 @@ localserver.start = () => {
         } else {
             const newItem = new AmazonItem(name, url);
             utils.addAmazonItem(newItem);
-            utils.updateAmazonPrice(newItem);
+            utils.updateAmazonItem(newItem);
             utils.saveAmazonItems();
             res.send({success: true, response: newItem});
         }
     });
 
-    
+
     app.post("/addUser", (req: any, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`)
         const username = req.body.username;
@@ -60,13 +60,23 @@ localserver.start = () => {
 
 
     app.post("/addItemToUser", (req: any, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/addUser'`)
+        console.log(`${req.method} METHOD REQUEST AT '/addUserToUser'`)
         const username = req.body.username;
         const password = req.body.password;
-        const reason = { reason: "User already exists in the database!" }
+        const item = req.body.productURL;
+        const reason1 = { reason: "Invalid User!" };
+        const reason2 = { reason: "Invalid Item!" };
+        const foundUser = utils.findUser(username);
+        const foundItem = utils.findAmazonItem(item);
 
-        if(utils.findUser(username)) {
-            res.send({success: false, response: reason})
+
+        if(foundUser) {
+            if(foundItem) {
+                foundUser.items.push(foundItem)
+                res.send({success: true, response: {foundUser, foundItem}});
+            } else {
+                utils.findAmazonItem(item)
+            }
         } else {
             const newUser = new UserData(username, password);
             utils.addUser(newUser);
@@ -94,7 +104,7 @@ localserver.start = () => {
     app.post("/findItem", (req: any, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/findItem'`)
         const url = req.body.productURL;
-        utils.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price: any) => {
+        utils.getSpecificContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price: any) => {
             console.log(`Sending price of ${price}...`);
             res.send(price);
         })

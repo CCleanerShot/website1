@@ -30,6 +30,7 @@ localserver.start = () => {
         else {
             const newItem = new amazonitem_1.AmazonItem(name, url);
             utils_1.default.addAmazonItem(newItem);
+            utils_1.default.updateAmazonItem(newItem);
             utils_1.default.saveAmazonItems();
             res.send({ success: true, response: newItem });
         }
@@ -40,7 +41,6 @@ localserver.start = () => {
         const password = req.body.password;
         const reason = { reason: "User already exists in the database!" };
         if (utils_1.default.findUser(username)) {
-            const reason = { reason: "User already exists in the database!" };
             res.send({ success: false, response: reason });
         }
         else {
@@ -50,12 +50,48 @@ localserver.start = () => {
             res.send({ success: true, response: newUser });
         }
     });
-    app.get("/getTable", (req, res) => {
+    app.post("/addItemToUser", (req, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/addUserToUser'`);
+        const username = req.body.username;
+        const password = req.body.password;
+        const item = req.body.productURL;
+        const reason1 = { reason: "Invalid User!" };
+        const reason2 = { reason: "Invalid Item!" };
+        const foundUser = utils_1.default.findUser(username);
+        const foundItem = utils_1.default.findAmazonItem(item);
+        if (foundUser) {
+            if (foundItem) {
+                foundUser.items.push(foundItem);
+                res.send({ success: true, response: { foundUser, foundItem } });
+            }
+            else {
+                utils_1.default.findAmazonItem(item);
+            }
+        }
+        else {
+            const newUser = new userdata_1.UserData(username, password);
+            utils_1.default.addUser(newUser);
+            utils_1.default.saveUsers();
+            res.send({ success: true, response: newUser });
+        }
+    });
+    app.get("/getItemsFromUser", (req, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/getTable'`);
+        const username = req.body.username;
+        const password = req.body.password;
+        const reason = { reason: "Invalid user!" };
+        const foundUser = utils_1.default.findUser(username, password);
+        if (foundUser) {
+            res.send({ success: true, response: foundUser.items });
+        }
+        else {
+            res.send({ success: false, response: reason });
+        }
     });
     app.post("/findItem", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/findItem'`);
         const url = req.body.productURL;
-        utils_1.default.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price) => {
+        utils_1.default.getSpecificContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price) => {
             console.log(`Sending price of ${price}...`);
             res.send(price);
         });

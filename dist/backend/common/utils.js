@@ -11,11 +11,37 @@ const userdata_1 = require("./structures/classes/userdata");
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
+const CSS_SELECTOR_NAME = "span#productTitle";
+const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
 const utils = {
     configData: new configdata_1.ConfigData(),
     itemData: [],
     userData: [],
-    getContents: function (url, cssSelector) {
+    getBaseContents: (url) => {
+        const splitURL = url.split(/\/+/);
+        const baseURL = [splitURL[0], splitURL[1]].join("/") + "/";
+        const paths = splitURL.slice(2).join("/") + "/";
+        const AxiosInstance = axios_1.default.create({
+            baseURL: baseURL,
+            timeout: 5000,
+        });
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+        };
+        return new Promise((res, rej) => {
+            AxiosInstance.get(paths, { headers: headers }).then((GETRes) => {
+                console.log("got a response!");
+                const $ = (0, cheerio_1.load)(GETRes.data);
+                if ($)
+                    res($);
+                else
+                    rej(undefined);
+            }).catch((GETRej) => {
+                rej("GET");
+            });
+        });
+    },
+    getSpecificContents: (url, cssSelector) => {
         const splitURL = url.split(/\/+/);
         const baseURL = [splitURL[0], splitURL[1]].join("/") + "/";
         const paths = splitURL.slice(2).join("/") + "/";
@@ -30,9 +56,9 @@ const utils = {
             const contents = AxiosInstance.get(paths, { headers: headers }).then((res) => {
                 console.log("got a response!");
                 const $ = (0, cheerio_1.load)(res.data);
-                return $(cssSelector).prop("innerHTML") || false;
+                return $(cssSelector).prop("innerHTML") || "";
             }).catch((rej) => {
-                return false;
+                return "";
             });
             if (contents) {
                 res(contents);
@@ -110,7 +136,7 @@ const utils = {
             .then(res => {
             const result = utils.convertToJSON(res);
             result.forEach(i => {
-                const item = new amazonitem_1.AmazonItem(i.name, i.url, i.prices, i.watchers, i.startDate);
+                const item = new amazonitem_1.AmazonItem(i.name, i.url, i.prices, i.watchers, i.lastUpdated);
                 data.push(item);
             });
         }).catch(rej => {
@@ -131,8 +157,11 @@ const utils = {
     addAmazonItem: (item) => {
         utils.itemData.push(item);
     },
-    findUser: (searchUser) => {
-        return utils.userData.find(user => user.username == searchUser);
+    findUser: (searchUser, searchPassword) => {
+        if (searchPassword)
+            return utils.userData.find(user => user.username == searchUser && user.password == searchPassword);
+        else
+            return utils.userData.find(user => user.username == searchUser);
     },
     addUser: (user) => {
         utils.userData.push(user);
@@ -143,6 +172,60 @@ const utils = {
         const requests = utils.configData.requests;
         const requestsMax = utils.configData.requestsMax;
         return requests <= requestsMax;
+    },
+    fetchAmazonItemFromSite: (url) => {
+        return new Promise((res, rej) => {
+            utils.getBaseContents(url)
+                .then($ => {
+                const name = $(CSS_SELECTOR_NAME).prop("innerHTML");
+                const price_ = $(CSS_SELECTOR_PRICE).prop("innerHTML");
+                if (!name || !price_) {
+                    rej("COULD NOT FIND NAME AND/OR PRICE!");
+                }
+                else {
+                    const price = parseFloat(price_);
+                    res(new amazonitem_1.AmazonItem(name || "CANNOT FIND", url, [price]));
+                }
+            }).catch(CheerioRej => {
+                return undefined;
+            });
+        });
+    },
+    fetchAmazonPrice: (url) => {
+        return new Promise((res, rej) => {
+            utils.getSpecificContents(url, CSS_SELECTOR_PRICE)
+                .then(price => {
+                res(parseFloat(price));
+            }).catch(contentsRej => {
+                rej(contentsRej);
+            });
+        });
+    },
+    updateAmazonItem: (item) => {
+        const oneday = 86400000;
+        const now = Date.now();
+        if (utils.findAmazonItem(item.url)) {
+            if (now - item.lastUpdated > oneday) {
+                utils.fetchAmazonPrice(item.url)
+                    .then((validItem) => {
+                    item.prices.push(validItem);
+                });
+                return true;
+            }
+        }
+        return false;
+    },
+    updateAmazonItems: () => {
+        const oneday = 86400000;
+        const now = Date.now();
+        utils.itemData.forEach(item => {
+            if (now - item.lastUpdated > oneday) {
+                utils.fetchAmazonPrice(item.url)
+                    .then((validItem) => {
+                    item.prices.push(validItem);
+                });
+            }
+        });
     }
 };
 module.exports = utils;
