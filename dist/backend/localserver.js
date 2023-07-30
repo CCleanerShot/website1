@@ -5,6 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const utils_1 = __importDefault(require("./common/utils"));
+const userdata_1 = require("./common/structures/classes/userdata");
+const amazonitem_1 = require("./common/structures/classes/amazonitem");
 const PORT = 3000;
 const app = (0, express_1.default)();
 const localserver = {
@@ -14,13 +16,41 @@ localserver.start = () => {
     app.use((0, cors_1.default)());
     app.use(express_1.default.json());
     app.get("/", (req, res) => {
-        console.log(req.method);
+        console.log(`${req.method} METHOD REQUEST AT '/'`);
         res.send("Hello other person!");
     });
+    app.post("/addItem", (req, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/addItem'`);
+        const name = req.body.name;
+        const url = req.body.url;
+        if (utils_1.default.findItem(name)) {
+            res.send({ success: false });
+        }
+        else {
+            const newItem = new amazonitem_1.AmazonItem(name, url);
+            utils_1.default.addItem(newItem);
+            res.send({ success: true, response: newItem });
+        }
+    });
+    app.post("/addUser", (req, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/addUser'`);
+        const username = req.body.username;
+        const password = req.body.password;
+        if (utils_1.default.findUser(username)) {
+            res.send({ success: false });
+        }
+        else {
+            const newUser = new userdata_1.UserData(username, password);
+            utils_1.default.addUser(newUser);
+            res.send({ success: true, response: newUser });
+        }
+    });
+    app.get("/getTable", (req, res) => {
+    });
     app.post("/findItem", (req, res) => {
-        console.log("Someone has requested item!");
+        console.log(`${req.method} METHOD REQUEST AT '/findItem'`);
         const url = req.body.productURL;
-        utils_1.default.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price, rej) => {
+        utils_1.default.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price) => {
             console.log(`Sending price of ${price}...`);
             res.send(price);
         });

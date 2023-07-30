@@ -2,33 +2,82 @@ const baseURL = "http://localhost:3000/"
 const paths = "/"
 const headers = {}
 
-const HEADER = document.getElementById("header");
-const SUBMIT_INPUT = document.getElementById("submit-input");
-const SUBMIT_BUTTON = document.getElementById("submit-button");
+const items = [];
+const SESSION_CONTAINER = document.getElementById("session-container");
+const SESSION_USERNAME = document.getElementById("session-username-field");
+const SESSION_ITEMS = document.getElementById("session-items-field");
+const SUBMIT_USERNAME = document.getElementById("submit-username");
+const SUBMIT_PASSWORD = document.getElementById("submit-password");
+const SUBMIT_USER_BUTTON = document.getElementById("submit-login");
+const SUBMIT_URL = document.getElementById("#submit-url");
+const LOGIN_USERNAME_WARNING = document.getElementById("login-username-header-warning");
 const AxiosInstance = window.axios.create({
     baseURL: baseURL,
     timeout: 5000,
 });
 
-function doFetchPrice (paths = "", productURL = "") {
-    console.log(`sending ${productURL}...`);
-    const data = {
-        productURL: productURL
-    };
-    
-    AxiosInstance.post(paths, data)
-    .then((res) => {
-        const price = res.json
-    }).catch(rej => {
-        console.log(rej);
+function POSTRequest (paths, options) {
+    return new Promise((res, rej) => {
+        let response;
+        AxiosInstance.post(paths, options)
+        .then((axiosRes) => {
+            console.log(axiosRes)
+            if(axiosRes.data.success == true) {
+                res(axiosRes);
+            } else {
+                rej(axiosRes);
+            }
+            response = res;
+        }).catch(axiosRej => {
+            console.log("AXIOS ERROR: ", axiosRej);
+        })
+
     })
 }
 
 
+function ServerAddUser(username, password) {
+    const options = {
+        username: username,
+        password: password
+    };
+    
+    return new Promise((res, rej) => {
+        POSTRequest("/addUser", options)
+        .then((POSTres) => {
+            res(POSTres)
+        }).catch((POSTrej) => {
+            rej("POSTREQUEST REJECTION: ", POSTrej)
+        })
+    })
+}
 
-SUBMIT_BUTTON.onclick = () => { doFetchPrice("findItem", SUBMIT_INPUT.value); };
-SUBMIT_BUTTON.style.border = "1px solid red"
 
-HEADER.innerHTML = "Header Words!";
+function ServerAddItem(url) {
+    const options = {
+        productURL: url
+    };
+    
+    return new Promise((res, rej) => {
+        POSTRequest("/addItem", options)
+        .then((POSTres) => {
+            res(POSTres)
+        }).catch((POSTrej) => {
+            rej("POSTREQUEST REJECTION: ", POSTrej)
+        })
+    })
+}
+
+
+SUBMIT_USER_BUTTON.onclick = () => { 
+    ServerAddUser(SUBMIT_USERNAME.value, SUBMIT_PASSWORD.value)
+    .then(res => {
+        SESSION_USERNAME.innerHTML = res.data.response.username;
+        SESSION_CONTAINER.classList.add("container-success")
+    }).catch(rej => {
+        LOGIN_USERNAME_WARNING.classList.remove("hidden");
+    });
+
+}
 
 console.log("Hello from frontend!");

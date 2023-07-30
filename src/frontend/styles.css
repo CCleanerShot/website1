@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@layer components {
+    .container-1 {
+        @apply border-4 bg-blue-400;
+    }
+
+    .container-2 {
+        @apply border-2 bg-blue-200;
+    }
+
+    .container-3 {
+        @apply border-2 bg-blue-200;
+    }
+
+    .container-success {
+        @apply bg-green-500;
+    }
+
+    .text-warning {
+        @apply text-red-600 font-bold;
+    }
+
+    .failed {
+        @apply bg-red-600;
+    }
+}
+
 * {
     margin: 1px;
     padding: 2px;

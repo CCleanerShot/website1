@@ -99,8 +99,8 @@ const utils = {
         return data;
     },
     saveUsers: (userPath = USER_PATH) => {
-        utils.userData.push(new userdata_1.UserData("Tom", "123"));
-        utils.userData.push(new userdata_1.UserData("Bob", "zxc", ["dswhns"]));
+        // utils.userData.push(new UserData("Tom", "123"));
+        // utils.userData.push(new UserData("Bob", "zxc", ["dswhns"]));
         const formattedData = JSON.stringify(utils.userData, null, 2);
         utils.saveFile(userPath, formattedData);
     },
@@ -110,7 +110,7 @@ const utils = {
             .then(res => {
             const result = utils.convertToJSON(res);
             result.forEach(i => {
-                const item = new amazonitem_1.AmazonItem(i.name, i.url, i.prices, i.watchers);
+                const item = new amazonitem_1.AmazonItem(i.name, i.url, i.prices, i.watchers, i.startDate);
                 data.push(item);
             });
         }).catch(rej => {
@@ -120,12 +120,22 @@ const utils = {
         return data;
     },
     saveAmazonItems: (itemPath = ITEM_PATH) => {
-        utils.itemData.push(new amazonitem_1.AmazonItem("asdhas", "sd2w", [2.44, 2.11]));
-        utils.itemData.push(new amazonitem_1.AmazonItem("asdhasa", "sd2wx"));
+        // utils.itemData.push(new AmazonItem("asdhas", "sd2w", [2.44, 2.11]))
+        // utils.itemData.push(new AmazonItem("asdhasa", "sd2wx"))
         const formattedData = JSON.stringify(utils.itemData, null, 2);
         utils.saveFile(itemPath, formattedData);
     },
     findItem: (searchUrl) => {
+        return utils.itemData.find(item => item.url == searchUrl);
+    },
+    addItem: (item) => {
+        utils.itemData.push(item);
+    },
+    findUser: (searchUser) => {
+        return utils.userData.find(user => user.username == searchUser);
+    },
+    addUser: (user) => {
+        utils.userData.push(user);
     },
     isTimeout: () => {
         if (utils.configData.needsResetting())

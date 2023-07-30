@@ -5,7 +5,6 @@ import fs from "fs";
 import { ConfigData } from "./structures/classes/configdata";
 import { AmazonItem } from "./structures/classes/amazonitem";
 import { UserData } from "./structures/classes/userdata";
-import { ItemData } from "./structures/types/itemdata";
 
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
@@ -15,7 +14,7 @@ interface UtilInterface {
     configData: ConfigData;
     itemData: AmazonItem[];
     userData: UserData[];
-    getContents(url: string, cssSelector?: string): any;
+    getContents(url: string, cssSelector?: string): Promise<string | boolean>;
     convertToJSON(input: string): Object;
     loadFile(path: string): Promise<string>;
     saveFile(path: string, contents: string): any;
@@ -26,7 +25,11 @@ interface UtilInterface {
     loadAmazonItems(itemPath?: string): AmazonItem[];
     saveAmazonItems(itemPath?: string): void;
 
-    findItem(searchUrl: string): void;
+    findItem(searchUrl: string): AmazonItem | undefined;
+    addItem(item: AmazonItem): void;
+    findUser(searchUser: string): UserData | undefined;
+    addUser(user: UserData): void;
+
     isTimeout(): boolean;
 }
 
@@ -34,7 +37,9 @@ const utils: UtilInterface = {
     configData: new ConfigData(),
     itemData: [] as AmazonItem[],
     userData: [] as UserData[],
-    getContents: function (url: string, cssSelector?: string) {
+
+
+    getContents: function (url: string, cssSelector?: string): Promise<string | boolean> {
         const splitURL = url.split(/\/+/)
         const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
         const paths = splitURL.slice(2).join("/") + "/"
@@ -157,7 +162,7 @@ const utils: UtilInterface = {
         .then(res => {
             const result = utils.convertToJSON(res) as [] as any[]
             result.forEach(i => {
-                const item = new AmazonItem(i.name, i.url, i.prices, i.watchers)
+                const item = new AmazonItem(i.name, i.url, i.prices, i.watchers, i.startDate);
                 data.push(item)
             });
         }).catch(rej => {
@@ -178,10 +183,23 @@ const utils: UtilInterface = {
     },
 
 
-    findItem: (searchUrl: string) => {
-    
+    findItem: (searchUrl: string): AmazonItem | undefined => {
+        return utils.itemData.find(item => item.url == searchUrl);
     },
     
+    addItem: (item: AmazonItem) => {
+        utils.itemData.push(item)
+    },
+
+
+    findUser: (searchUser: string): UserData | undefined => {
+        return utils.userData.find(user => user.username == searchUser);
+    },
+
+    addUser: (user: UserData) => {
+        utils.userData.push(user)
+    },
+
     isTimeout: () => {
         if(utils.configData.needsResetting())
             utils.configData.reset();
@@ -190,6 +208,7 @@ const utils: UtilInterface = {
         const requestsMax = utils.configData.requestsMax;
         return requests <= requestsMax;
     }
+
 }
 
 
