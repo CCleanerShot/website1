@@ -125,10 +125,10 @@ const utils = {
         const formattedData = JSON.stringify(utils.itemData, null, 2);
         utils.saveFile(itemPath, formattedData);
     },
-    findItem: (searchUrl) => {
+    findAmazonItem: (searchUrl) => {
         return utils.itemData.find(item => item.url == searchUrl);
     },
-    addItem: (item) => {
+    addAmazonItem: (item) => {
         utils.itemData.push(item);
     },
     findUser: (searchUser) => {

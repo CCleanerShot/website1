@@ -20,7 +20,6 @@ localserver.start = () => {
 
     app.get("/", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/'`)
-        
         res.send("Hello other person!");
     });
 
@@ -30,31 +29,65 @@ localserver.start = () => {
         const name = req.body.name;
         const url = req.body.url;
 
-        if(utils.findItem(name)) {
-            res.send({success: false})
+        if(utils.findAmazonItem(name)) {
+            const reason = { reason: "Item already exists in the database!" }
+            res.send({success: false, response: reason})
         } else {
             const newItem = new AmazonItem(name, url);
-            utils.addItem(newItem);
+            utils.addAmazonItem(newItem);
+            utils.updateAmazonPrice(newItem);
+            utils.saveAmazonItems();
             res.send({success: true, response: newItem});
         }
     });
 
+    
     app.post("/addUser", (req: any, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`)
         const username = req.body.username;
         const password = req.body.password;
+        const reason = { reason: "User already exists in the database!" }
 
         if(utils.findUser(username)) {
-            res.send({success: false})
+            res.send({success: false, response: reason})
         } else {
             const newUser = new UserData(username, password);
             utils.addUser(newUser);
+            utils.saveUsers()
             res.send({success: true, response: newUser});
         }
     });
 
-    app.get("/getTable", (req: any, res) => {
 
+    app.post("/addItemToUser", (req: any, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/addUser'`)
+        const username = req.body.username;
+        const password = req.body.password;
+        const reason = { reason: "User already exists in the database!" }
+
+        if(utils.findUser(username)) {
+            res.send({success: false, response: reason})
+        } else {
+            const newUser = new UserData(username, password);
+            utils.addUser(newUser);
+            utils.saveUsers()
+            res.send({success: true, response: newUser});
+        }
+    });
+
+
+    app.get("/getItemsFromUser", (req: any, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/getTable'`)
+        const username = req.body.username;
+        const password = req.body.password;
+        const reason = { reason: "Invalid user!" };
+        const foundUser = utils.findUser(username, password);
+
+        if(foundUser) {
+            res.send({success: true, response: foundUser.items})
+        } else {
+            res.send({success: false, response: reason})
+        }
     });
 
 

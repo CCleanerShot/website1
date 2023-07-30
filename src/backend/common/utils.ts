@@ -14,7 +14,7 @@ interface UtilInterface {
     configData: ConfigData;
     itemData: AmazonItem[];
     userData: UserData[];
-    getContents(url: string, cssSelector?: string): Promise<string | boolean>;
+    getContents(url: string, cssSelector?: string): Promise<string>;
     convertToJSON(input: string): Object;
     loadFile(path: string): Promise<string>;
     saveFile(path: string, contents: string): any;
@@ -25,12 +25,15 @@ interface UtilInterface {
     loadAmazonItems(itemPath?: string): AmazonItem[];
     saveAmazonItems(itemPath?: string): void;
 
-    findItem(searchUrl: string): AmazonItem | undefined;
-    addItem(item: AmazonItem): void;
-    findUser(searchUser: string): UserData | undefined;
+    findAmazonItem(searchUrl: string): AmazonItem | undefined;
+    addAmazonItem(item: AmazonItem): void;
+    findUser(searchUser: string, searchPassword?: string): UserData | undefined;
     addUser(user: UserData): void;
-
     isTimeout(): boolean;
+
+    fetchAmazonPrice(url: string): Promise<number>;
+    updateAmazonPrice(item: AmazonItem): boolean;
+    updateAmazonPrices(): void;
 }
 
 const utils: UtilInterface = {
@@ -39,7 +42,7 @@ const utils: UtilInterface = {
     userData: [] as UserData[],
 
 
-    getContents: function (url: string, cssSelector?: string): Promise<string | boolean> {
+    getContents: function (url: string, cssSelector?: string): Promise<string> {
         const splitURL = url.split(/\/+/)
         const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
         const paths = splitURL.slice(2).join("/") + "/"
@@ -58,9 +61,9 @@ const utils: UtilInterface = {
             ).then((res) => {
                 console.log("got a response!")
                 const $ = load(res.data);
-                return $(cssSelector).prop("innerHTML") || false
+                return $(cssSelector).prop("innerHTML") || ""
             }).catch((rej) => {
-                return false;
+                return "";
             });
         
             if(contents) {
@@ -162,7 +165,7 @@ const utils: UtilInterface = {
         .then(res => {
             const result = utils.convertToJSON(res) as [] as any[]
             result.forEach(i => {
-                const item = new AmazonItem(i.name, i.url, i.prices, i.watchers, i.startDate);
+                const item = new AmazonItem(i.name, i.url, i.prices, i.watchers, i.lastUpdated);
                 data.push(item)
             });
         }).catch(rej => {
@@ -183,22 +186,28 @@ const utils: UtilInterface = {
     },
 
 
-    findItem: (searchUrl: string): AmazonItem | undefined => {
+    findAmazonItem: (searchUrl: string): AmazonItem | undefined => {
         return utils.itemData.find(item => item.url == searchUrl);
     },
     
-    addItem: (item: AmazonItem) => {
+
+    addAmazonItem: (item: AmazonItem) => {
         utils.itemData.push(item)
     },
 
 
-    findUser: (searchUser: string): UserData | undefined => {
-        return utils.userData.find(user => user.username == searchUser);
+    findUser: (searchUser: string, searchPassword?: string): UserData | undefined => {
+        if(searchPassword)
+            return utils.userData.find(user => user.username == searchUser && user.password == searchPassword);
+        else
+            return utils.userData.find(user => user.username == searchUser);
     },
+
 
     addUser: (user: UserData) => {
         utils.userData.push(user)
     },
+
 
     isTimeout: () => {
         if(utils.configData.needsResetting())
@@ -207,8 +216,51 @@ const utils: UtilInterface = {
         const requests = utils.configData.requests;
         const requestsMax = utils.configData.requestsMax;
         return requests <= requestsMax;
-    }
+    },
 
+    fetchAmazonPrice: (url: string): Promise<number> => {
+        return new Promise((res, rej) => {
+            utils.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first")
+            .then(price => {
+                res(parseFloat(price));
+            }).catch(contentsRej => {
+                rej(contentsRej);
+            })
+        })
+
+    },
+
+    updateAmazonPrice: (item: AmazonItem): boolean => {
+        const oneday = 86400000;
+        const now = Date.now();
+
+        if(utils.findAmazonItem(item.url)) {
+            if(now - item.lastUpdated > oneday) {
+                utils.fetchAmazonPrice(item.url)
+                .then((validItem) => {
+                    item.prices.push(validItem);
+                });
+
+                return true
+            }
+        }
+        
+        return false;
+    },
+
+    updateAmazonPrices: () => {
+        const oneday = 86400000;
+        const now = Date.now();
+
+        utils.itemData.forEach(item => {
+            if(now - item.lastUpdated > oneday) {
+                utils.fetchAmazonPrice(item.url)
+                .then((validItem) => {
+                    item.prices.push(validItem);
+                })
+            }
+        })
+    }
 }
 
 

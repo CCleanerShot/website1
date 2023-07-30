@@ -23,12 +23,14 @@ localserver.start = () => {
         console.log(`${req.method} METHOD REQUEST AT '/addItem'`);
         const name = req.body.name;
         const url = req.body.url;
-        if (utils_1.default.findItem(name)) {
-            res.send({ success: false });
+        if (utils_1.default.findAmazonItem(name)) {
+            const reason = { reason: "Item already exists in the database!" };
+            res.send({ success: false, response: reason });
         }
         else {
             const newItem = new amazonitem_1.AmazonItem(name, url);
-            utils_1.default.addItem(newItem);
+            utils_1.default.addAmazonItem(newItem);
+            utils_1.default.saveAmazonItems();
             res.send({ success: true, response: newItem });
         }
     });
@@ -36,12 +38,15 @@ localserver.start = () => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`);
         const username = req.body.username;
         const password = req.body.password;
+        const reason = { reason: "User already exists in the database!" };
         if (utils_1.default.findUser(username)) {
-            res.send({ success: false });
+            const reason = { reason: "User already exists in the database!" };
+            res.send({ success: false, response: reason });
         }
         else {
             const newUser = new userdata_1.UserData(username, password);
             utils_1.default.addUser(newUser);
+            utils_1.default.saveUsers();
             res.send({ success: true, response: newUser });
         }
     });
