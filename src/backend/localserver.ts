@@ -24,8 +24,8 @@ localserver.start = () => {
         console.log("Someone has requested item!");
         const url = req.body.productURL;
         utils.getContents(url, "#tp_price_block_total_price_ww > .a-offscreen:first").then((price: any, rej: any) => {
-            console.log(`Sending price of ${price}...`)
-            res.send(price)
+            console.log(`Sending price of ${price}...`);
+            res.send(price);
         })
 
     })

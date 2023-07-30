@@ -1,14 +1,13 @@
-import { ItemData } from "../types/itemdata";
 
 export class UserData {
     username: string;
     password: string;
-    items: ItemData[];
+    items: string[];
 
     constructor(
     username: string,
     password: string,
-    items: ItemData[] = []
+    items: string[] = []
     ) {
         this.username = username;
         this.password = password;

@@ -18,7 +18,7 @@ function doFetchPrice (paths = "", productURL = "") {
     
     AxiosInstance.post(paths, data)
     .then((res) => {
-        console.log(res)
+        const price = res.json
     }).catch(rej => {
         console.log(rej);
     })
