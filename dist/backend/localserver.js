@@ -31,9 +31,9 @@ localserver.start = () => {
             const newItem = new amazonitem_1.AmazonItem(name, url);
             utils_1.default.addAmazonItem(newItem);
             utils_1.default.updateAmazonItem(newItem);
-            utils_1.default.saveAmazonItems();
             res.send({ success: true, response: newItem });
         }
+        utils_1.default.saveAmazonItems();
     });
     app.post("/addUser", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`);
@@ -41,39 +41,50 @@ localserver.start = () => {
         const password = req.body.password;
         const reason = { reason: "User already exists in the database!" };
         if (utils_1.default.findUser(username)) {
-            res.send({ success: false, response: reason });
+            const validUser = utils_1.default.findUser(username, password);
+            if (validUser)
+                res.send({ success: true, response: validUser });
+            else
+                res.send({ success: false, response: reason });
         }
         else {
             const newUser = new userdata_1.UserData(username, password);
             utils_1.default.addUser(newUser);
-            utils_1.default.saveUsers();
             res.send({ success: true, response: newUser });
         }
+        utils_1.default.saveUsers();
     });
     app.post("/addItemToUser", (req, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/addUserToUser'`);
+        console.log(`${req.method} METHOD REQUEST AT '/addItemToUser'`);
         const username = req.body.username;
         const password = req.body.password;
-        const item = req.body.productURL;
+        const url = req.body.productURL;
         const reason1 = { reason: "Invalid User!" };
         const reason2 = { reason: "Invalid Item!" };
-        const foundUser = utils_1.default.findUser(username);
-        const foundItem = utils_1.default.findAmazonItem(item);
+        const foundUser = utils_1.default.findUser(username, password);
+        const foundItem = utils_1.default.findAmazonItem(url);
+        console.log(foundItem);
         if (foundUser) {
             if (foundItem) {
                 foundUser.items.push(foundItem);
-                res.send({ success: true, response: { foundUser, foundItem } });
+                res.send({ success: true, response: { user: foundUser } });
             }
             else {
-                utils_1.default.findAmazonItem(item);
+                utils_1.default.fetchAmazonItemFromSite(url)
+                    .then(fetchedItem => {
+                    utils_1.default.addAmazonItem(fetchedItem);
+                    foundUser.items.push(fetchedItem);
+                    res.send({ success: true, response: { user: foundUser } });
+                }).catch(rej => {
+                    res.send({ success: false, response: reason2 });
+                });
             }
         }
         else {
-            const newUser = new userdata_1.UserData(username, password);
-            utils_1.default.addUser(newUser);
-            utils_1.default.saveUsers();
-            res.send({ success: true, response: newUser });
+            res.send({ success: false, response: reason1 });
         }
+        utils_1.default.saveUsers();
+        utils_1.default.saveAmazonItems();
     });
     app.get("/getItemsFromUser", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/getTable'`);

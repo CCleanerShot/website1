@@ -8,26 +8,27 @@ const fs_1 = __importDefault(require("fs"));
 const configdata_1 = require("./structures/classes/configdata");
 const amazonitem_1 = require("./structures/classes/amazonitem");
 const userdata_1 = require("./structures/classes/userdata");
+const baseURL = "http://localhost:3000/";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
 const CSS_SELECTOR_NAME = "span#productTitle";
 const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
+const AxiosInstance = axios_1.default.create({
+    baseURL: baseURL,
+    timeout: 5000,
+});
 const utils = {
     configData: new configdata_1.ConfigData(),
     itemData: [],
     userData: [],
     getBaseContents: (url) => {
         const splitURL = url.split(/\/+/);
-        const baseURL = [splitURL[0], splitURL[1]].join("/") + "/";
         const paths = splitURL.slice(2).join("/") + "/";
-        const AxiosInstance = axios_1.default.create({
-            baseURL: baseURL,
-            timeout: 5000,
-        });
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         };
+        console.log("inside base");
         return new Promise((res, rej) => {
             AxiosInstance.get(paths, { headers: headers }).then((GETRes) => {
                 console.log("got a response!");
@@ -37,18 +38,14 @@ const utils = {
                 else
                     rej(undefined);
             }).catch((GETRej) => {
+                console.log("rejected!", GETRej);
                 rej("GET");
             });
         });
     },
     getSpecificContents: (url, cssSelector) => {
         const splitURL = url.split(/\/+/);
-        const baseURL = [splitURL[0], splitURL[1]].join("/") + "/";
         const paths = splitURL.slice(2).join("/") + "/";
-        const AxiosInstance = axios_1.default.create({
-            baseURL: baseURL,
-            timeout: 5000,
-        });
         return new Promise((res, rej) => {
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
@@ -125,8 +122,6 @@ const utils = {
         return data;
     },
     saveUsers: (userPath = USER_PATH) => {
-        // utils.userData.push(new UserData("Tom", "123"));
-        // utils.userData.push(new UserData("Bob", "zxc", ["dswhns"]));
         const formattedData = JSON.stringify(utils.userData, null, 2);
         utils.saveFile(userPath, formattedData);
     },
@@ -146,8 +141,6 @@ const utils = {
         return data;
     },
     saveAmazonItems: (itemPath = ITEM_PATH) => {
-        // utils.itemData.push(new AmazonItem("asdhas", "sd2w", [2.44, 2.11]))
-        // utils.itemData.push(new AmazonItem("asdhasa", "sd2wx"))
         const formattedData = JSON.stringify(utils.itemData, null, 2);
         utils.saveFile(itemPath, formattedData);
     },
@@ -174,19 +167,24 @@ const utils = {
         return requests <= requestsMax;
     },
     fetchAmazonItemFromSite: (url) => {
+        console.log("inside fetch");
         return new Promise((res, rej) => {
             utils.getBaseContents(url)
                 .then($ => {
                 const name = $(CSS_SELECTOR_NAME).prop("innerHTML");
                 const price_ = $(CSS_SELECTOR_PRICE).prop("innerHTML");
                 if (!name || !price_) {
+                    console.log("COULD NOT FIND NAME AND/OR PRICE!");
                     rej("COULD NOT FIND NAME AND/OR PRICE!");
                 }
                 else {
                     const price = parseFloat(price_);
-                    res(new amazonitem_1.AmazonItem(name || "CANNOT FIND", url, [price]));
+                    const newItem = new amazonitem_1.AmazonItem(name, url, [price]);
+                    console.log(newItem);
+                    res(newItem);
                 }
             }).catch(CheerioRej => {
+                console.log("failed!");
                 return undefined;
             });
         });

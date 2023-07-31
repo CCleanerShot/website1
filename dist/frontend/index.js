@@ -4,7 +4,7 @@ const headers = {};
 
 let username = "";
 let password = "";
-const items = [];
+let items = [];
 const SESSION_CONTAINER = document.getElementById("session-container");
 const SESSION_USERNAME = document.getElementById("session-username-field");
 const SESSION_ITEMS = document.getElementById("session-items-field");
@@ -16,6 +16,8 @@ const ADD_ITEM_BUTTON = document.getElementById("add-item-button");
 const ADD_ITEM_URL_WARNING = document.getElementById("add-item-header-warning");
 const LOGIN_BUTTON = document.getElementById("login-button");
 const LOGIN_WARNING = document.getElementById("login-header-warning");
+const ITEM_TABLE_HEADER_BUTTON = document.getElementById("item-table-header-button");
+const ITEM_TABLE_HEADER_WARNING = document.getElementById("item-table-header-warning");
 const AxiosInstance = window.axios.create({
     baseURL: baseURL,
     timeout: 5000,
@@ -125,11 +127,19 @@ LOGIN_BUTTON.onclick = () => {
 ADD_ITEM_BUTTON.onclick = () => {
     ServerAddItemToUser(username, password, SUBMIT_URL)
     .then(res => {
-
+        items = res.data
+        console.log(items)
     }).catch(rej => {
 
-    })
+    });
 }
 
+ITEM_TABLE_HEADER_BUTTON.onclick = () => {
+    ServerGetItemsFromUser(username, password)
+    .then(res => {
+        console.log(res.data)
+    }).catch(rej => {
 
+    });
+}
 console.log("Hello from frontend!");

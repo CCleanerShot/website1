@@ -6,11 +6,16 @@ import { ConfigData } from "./structures/classes/configdata";
 import { AmazonItem } from "./structures/classes/amazonitem";
 import { UserData } from "./structures/classes/userdata";
 
+const baseURL = "http://localhost:3000/";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
 const CSS_SELECTOR_NAME = "span#productTitle";
 const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
+const AxiosInstance = axios.create({
+    baseURL: baseURL,
+    timeout: 5000,
+});
 interface UtilInterface {
     configData: ConfigData;
     itemData: AmazonItem[];
@@ -47,16 +52,13 @@ const utils: UtilInterface = {
 
     getBaseContents: (url: string): Promise<CheerioAPI> => {
         const splitURL = url.split(/\/+/)
-        const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
         const paths = splitURL.slice(2).join("/") + "/"
-        const AxiosInstance = axios.create({
-            baseURL: baseURL,
-            timeout: 5000,
-        });
+
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         }
 
+        console.log("inside base");
         return new Promise((res, rej) => {
             AxiosInstance.get(
                 paths, 
@@ -69,6 +71,7 @@ const utils: UtilInterface = {
                 else
                     rej(undefined)
             }).catch((GETRej) => {
+                console.log("rejected!", GETRej);
                 rej("GET")
             });
         });
@@ -76,13 +79,8 @@ const utils: UtilInterface = {
 
     getSpecificContents: (url: string, cssSelector?: string): Promise<string> => {
         const splitURL = url.split(/\/+/)
-        const baseURL = [ splitURL[0], splitURL[1] ].join("/") + "/"
         const paths = splitURL.slice(2).join("/") + "/"
-        const AxiosInstance = axios.create({
-            baseURL: baseURL,
-            timeout: 5000,
-        });
-    
+
         return new Promise((res, rej) => {
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
@@ -182,9 +180,6 @@ const utils: UtilInterface = {
 
 
     saveUsers: (userPath = USER_PATH) => {
-        // utils.userData.push(new UserData("Tom", "123"));
-        // utils.userData.push(new UserData("Bob", "zxc", ["dswhns"]));
-
         const formattedData = JSON.stringify(utils.userData, null, 2);
         utils.saveFile(userPath, formattedData);
     },
@@ -210,9 +205,6 @@ const utils: UtilInterface = {
 
     
     saveAmazonItems: (itemPath = ITEM_PATH) => {
-        // utils.itemData.push(new AmazonItem("asdhas", "sd2w", [2.44, 2.11]))
-        // utils.itemData.push(new AmazonItem("asdhasa", "sd2wx"))
-
         const formattedData = JSON.stringify(utils.itemData, null, 2);
         utils.saveFile(itemPath, formattedData);
     },
@@ -224,7 +216,7 @@ const utils: UtilInterface = {
     
 
     addAmazonItem: (item: AmazonItem) => {
-        utils.itemData.push(item)
+        utils.itemData.push(item);
     },
 
 
@@ -237,7 +229,7 @@ const utils: UtilInterface = {
 
 
     addUser: (user: UserData) => {
-        utils.userData.push(user)
+        utils.userData.push(user);
     },
 
 
@@ -251,6 +243,7 @@ const utils: UtilInterface = {
     },
 
     fetchAmazonItemFromSite: (url: string): Promise<AmazonItem> => {
+        console.log("inside fetch");
         return new Promise((res, rej) => {
             utils.getBaseContents(url)
             .then($ => {
@@ -258,12 +251,16 @@ const utils: UtilInterface = {
                 const price_ = $(CSS_SELECTOR_PRICE).prop("innerHTML");
 
                 if(!name || !price_) {
+                    console.log("COULD NOT FIND NAME AND/OR PRICE!");
                     rej("COULD NOT FIND NAME AND/OR PRICE!");
                 } else {
-                    const price = parseFloat(price_)
-                    res(new AmazonItem(name || "CANNOT FIND", url, [price]))
+                    const price = parseFloat(price_);
+                    const newItem = new AmazonItem(name, url, [price]);
+                    console.log(newItem);
+                    res(newItem);
                 }
             }).catch(CheerioRej => {
+                console.log("failed!");
                 return undefined;
             })
         })

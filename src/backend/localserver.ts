@@ -36,9 +36,10 @@ localserver.start = () => {
             const newItem = new AmazonItem(name, url);
             utils.addAmazonItem(newItem);
             utils.updateAmazonItem(newItem);
-            utils.saveAmazonItems();
             res.send({success: true, response: newItem});
         }
+      
+        utils.saveAmazonItems();
     });
 
 
@@ -47,42 +48,53 @@ localserver.start = () => {
         const username = req.body.username;
         const password = req.body.password;
         const reason = { reason: "User already exists in the database!" }
-
         if(utils.findUser(username)) {
-            res.send({success: false, response: reason})
+            const validUser = utils.findUser(username, password);
+            if(validUser)
+                res.send({success: true, response: validUser});
+            else
+                res.send({success: false, response: reason});
         } else {
             const newUser = new UserData(username, password);
             utils.addUser(newUser);
-            utils.saveUsers()
             res.send({success: true, response: newUser});
         }
+
+        utils.saveUsers();
     });
 
 
     app.post("/addItemToUser", (req: any, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/addUserToUser'`)
+        console.log(`${req.method} METHOD REQUEST AT '/addItemToUser'`)
         const username = req.body.username;
         const password = req.body.password;
-        const item = req.body.productURL;
+        const url = req.body.productURL;
         const reason1 = { reason: "Invalid User!" };
         const reason2 = { reason: "Invalid Item!" };
-        const foundUser = utils.findUser(username);
-        const foundItem = utils.findAmazonItem(item);
+        const foundUser = utils.findUser(username, password);
+        const foundItem = utils.findAmazonItem(url);
 
-
+        console.log(foundItem)
         if(foundUser) {
             if(foundItem) {
-                foundUser.items.push(foundItem)
-                res.send({success: true, response: {foundUser, foundItem}});
+                foundUser.items.push(foundItem);
+                res.send({success: true, response: {user: foundUser}});
             } else {
-                utils.findAmazonItem(item)
+                utils.fetchAmazonItemFromSite(url)
+                .then(fetchedItem => {
+                    utils.addAmazonItem(fetchedItem)
+                    foundUser.items.push(fetchedItem)
+                    res.send({success: true, response: {user: foundUser}});
+                }).catch(rej => {
+                    res.send({success: false, response: reason2})
+                })
             }
         } else {
-            const newUser = new UserData(username, password);
-            utils.addUser(newUser);
-            utils.saveUsers()
-            res.send({success: true, response: newUser});
+            res.send({success: false, response: reason1});
         }
+
+        utils.saveUsers();
+        utils.saveAmazonItems();
     });
 
 
