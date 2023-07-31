@@ -579,6 +579,10 @@ video {
   width: 50%;
 }
 
+.w-screen {
+  width: 100vw;
+}
+
 .bg-gray-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
@@ -593,6 +597,11 @@ video {
   text-align: center;
 }
 
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
 .font-bold {
   font-weight: 700;
 }
@@ -605,4 +614,9 @@ video {
 * {
   margin: 1px;
   padding: 2px;
+}
+
+button {
+  padding: 10px;
+  border: 1px solid black;
 }

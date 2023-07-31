@@ -2,57 +2,6 @@
   {
     "username": "tom",
     "password": "123",
-    "items": [
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690767771565
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690767896314
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690767944178
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768051959
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768153092
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768368056
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768434886
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768542616
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768718327
-      },
-      {
-        "prices": [],
-        "watchers": [],
-        "lastUpdated": 1690768929609
-      }
-    ]
+    "items": []
   }
 ]

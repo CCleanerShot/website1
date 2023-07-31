@@ -8,7 +8,7 @@ const fs_1 = __importDefault(require("fs"));
 const configdata_1 = require("./structures/classes/configdata");
 const amazonitem_1 = require("./structures/classes/amazonitem");
 const userdata_1 = require("./structures/classes/userdata");
-const baseURL = "http://localhost:3000/";
+const baseURL = "https://www.amazon.com/";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
@@ -28,15 +28,13 @@ const utils = {
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         };
-        console.log("inside base");
         return new Promise((res, rej) => {
             AxiosInstance.get(paths, { headers: headers }).then((GETRes) => {
-                console.log("got a response!");
                 const $ = (0, cheerio_1.load)(GETRes.data);
                 if ($)
                     res($);
                 else
-                    rej(undefined);
+                    rej("Unable to turn response to CheerioAPI!");
             }).catch((GETRej) => {
                 console.log("rejected!", GETRej);
                 rej("GET");
@@ -167,20 +165,17 @@ const utils = {
         return requests <= requestsMax;
     },
     fetchAmazonItemFromSite: (url) => {
-        console.log("inside fetch");
         return new Promise((res, rej) => {
             utils.getBaseContents(url)
                 .then($ => {
                 const name = $(CSS_SELECTOR_NAME).prop("innerHTML");
                 const price_ = $(CSS_SELECTOR_PRICE).prop("innerHTML");
                 if (!name || !price_) {
-                    console.log("COULD NOT FIND NAME AND/OR PRICE!");
                     rej("COULD NOT FIND NAME AND/OR PRICE!");
                 }
                 else {
-                    const price = parseFloat(price_);
+                    const price = parseFloat(price_.replace("$", ""));
                     const newItem = new amazonitem_1.AmazonItem(name, url, [price]);
-                    console.log(newItem);
                     res(newItem);
                 }
             }).catch(CheerioRej => {

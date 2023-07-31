@@ -7,8 +7,8 @@
         <script src="../index.js" defer></script>
     </head>
     <body class="bg-gray-100">
-        <div id="header" class="flex">
-            <div id="session-container" class="container-neutral w-1/2 flex-4">
+        <div id="header" class="flex w-screen">
+            <div id="session-container" class="container-neutral flex-8">
                 <div id="session-header">CURRENT SESSION:</div>
                 <div>
                     <div></div>
@@ -20,7 +20,7 @@
                     <div id="session-items-field"></div>
                 </div>
             </div>
-            <div id="login-container" class="container-neutral flex-8 text-center">
+            <div id="login-container" class="container-neutral flex-4 text-center">
                 <div id="login-header" class="font-bold text-">LOGIN / SIGNUP</div>
                 <div id="login-field">
                     <div id="login-header">
@@ -40,13 +40,13 @@
         </div>
         <div id="content">
 
-            <div id="add-item-container" class="container-2">
+            <div id="add-item-container" class="container-2 text-center">
                 <div id="add-item-header">
                     <div id="add-item-header-text">Insert an Amazon URL here:</div>
-                    <div id="add-item-header-warning"></div>
+                    <button id="add-item-button">Submit</button>
+                    <div id="add-item-header-warning" class=""></div>
                 </div>
-                <input id="submit-addItemRequest" type="text" class="bg-slate-100">
-                <button id="add-item-button">Submit</button>
+                <input id="submit-url" type="text" class="bg-slate-100 w-1/2 text-xs">
             </div>
             <div id="item-table-container">
                 <div id="item-table"></div>

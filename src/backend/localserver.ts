@@ -71,26 +71,32 @@ localserver.start = () => {
         const url = req.body.productURL;
         const reason1 = { reason: "Invalid User!" };
         const reason2 = { reason: "Invalid Item!" };
+        const reason3 = { reason: "Missing a parameter!" };
         const foundUser = utils.findUser(username, password);
         const foundItem = utils.findAmazonItem(url);
 
-        console.log(foundItem)
-        if(foundUser) {
-            if(foundItem) {
-                foundUser.items.push(foundItem);
-                res.send({success: true, response: {user: foundUser}});
-            } else {
-                utils.fetchAmazonItemFromSite(url)
-                .then(fetchedItem => {
-                    utils.addAmazonItem(fetchedItem)
-                    foundUser.items.push(fetchedItem)
-                    res.send({success: true, response: {user: foundUser}});
-                }).catch(rej => {
-                    res.send({success: false, response: reason2})
-                })
-            }
-        } else {
+        if(!username || !password || !url) {
+            res.send({success: false, response: reason3});
+            return;
+        }
+
+        if(!foundUser) {
             res.send({success: false, response: reason1});
+            return;
+        }
+
+        if(foundItem) {
+            foundUser.items.push(foundItem);
+            res.send({success: true, response: {user: foundUser}});
+        } else {
+            utils.fetchAmazonItemFromSite(url)
+            .then(fetchedItem => {
+                utils.addAmazonItem(fetchedItem)
+                foundUser.items.push(fetchedItem)
+                res.send({success: true, response: {user: foundUser}});
+            }).catch(rej => {
+                res.send({success: false, response: reason2})
+            })
         }
 
         utils.saveUsers();

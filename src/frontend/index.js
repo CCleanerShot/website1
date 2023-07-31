@@ -8,16 +8,16 @@ let items = [];
 const SESSION_CONTAINER = document.getElementById("session-container");
 const SESSION_USERNAME = document.getElementById("session-username-field");
 const SESSION_ITEMS = document.getElementById("session-items-field");
-const SUBMIT_USERNAME = document.getElementById("submit-username");
-const SUBMIT_PASSWORD = document.getElementById("submit-password");
-const SUBMIT_URL = document.getElementById("#submit-url");
-
 const ADD_ITEM_BUTTON = document.getElementById("add-item-button");
 const ADD_ITEM_URL_WARNING = document.getElementById("add-item-header-warning");
 const LOGIN_BUTTON = document.getElementById("login-button");
 const LOGIN_WARNING = document.getElementById("login-header-warning");
 const ITEM_TABLE_HEADER_BUTTON = document.getElementById("item-table-header-button");
 const ITEM_TABLE_HEADER_WARNING = document.getElementById("item-table-header-warning");
+
+const SUBMIT_USERNAME = document.getElementById("submit-username");
+const SUBMIT_PASSWORD = document.getElementById("submit-password");
+const SUBMIT_URL = document.getElementById("submit-url");
 const AxiosInstance = window.axios.create({
     baseURL: baseURL,
     timeout: 5000,
@@ -108,6 +108,15 @@ function ServerGetItemsFromUser(username, password) {
     })
 }
 
+function trimItems() {
+    items = items.map(i => i.trim());
+}
+
+function removeAllChildren(parentElement) {
+    while(parentElement.firstChild) {
+        parentElement.removeChild(parentElement.firstChild)
+    }
+}
 LOGIN_BUTTON.onclick = () => { 
     ServerAddUser(SUBMIT_USERNAME.value, SUBMIT_PASSWORD.value)
     .then(res => {
@@ -125,10 +134,19 @@ LOGIN_BUTTON.onclick = () => {
 }
 
 ADD_ITEM_BUTTON.onclick = () => {
-    ServerAddItemToUser(username, password, SUBMIT_URL)
+    ServerAddItemToUser(username, password, SUBMIT_URL.value)
     .then(res => {
-        items = res.data
-        console.log(items)
+        items = res.data.response.user.items;
+        console.log("DATA:", res.data.response);
+        console.log("USER:", res.data.response.user);
+        trimItems()
+        removeAllChildren(SESSION_ITEMS);
+        items.forEach(i => {
+            const sessionItem = document.createElement("div");
+            sessionItem.innerHTML = item.name.substring(0, 20) + "...";
+            console.log(sessionItem.innerHTML);
+            SESSION_ITEMS.appendChild(sessionItem);
+        });
     }).catch(rej => {
 
     });

@@ -61,27 +61,30 @@ localserver.start = () => {
         const url = req.body.productURL;
         const reason1 = { reason: "Invalid User!" };
         const reason2 = { reason: "Invalid Item!" };
+        const reason3 = { reason: "Missing a parameter!" };
         const foundUser = utils_1.default.findUser(username, password);
         const foundItem = utils_1.default.findAmazonItem(url);
-        console.log(foundItem);
-        if (foundUser) {
-            if (foundItem) {
-                foundUser.items.push(foundItem);
-                res.send({ success: true, response: { user: foundUser } });
-            }
-            else {
-                utils_1.default.fetchAmazonItemFromSite(url)
-                    .then(fetchedItem => {
-                    utils_1.default.addAmazonItem(fetchedItem);
-                    foundUser.items.push(fetchedItem);
-                    res.send({ success: true, response: { user: foundUser } });
-                }).catch(rej => {
-                    res.send({ success: false, response: reason2 });
-                });
-            }
+        if (!username || !password || !url) {
+            res.send({ success: false, response: reason3 });
+            return;
+        }
+        if (!foundUser) {
+            res.send({ success: false, response: reason1 });
+            return;
+        }
+        if (foundItem) {
+            foundUser.items.push(foundItem);
+            res.send({ success: true, response: { user: foundUser } });
         }
         else {
-            res.send({ success: false, response: reason1 });
+            utils_1.default.fetchAmazonItemFromSite(url)
+                .then(fetchedItem => {
+                utils_1.default.addAmazonItem(fetchedItem);
+                foundUser.items.push(fetchedItem);
+                res.send({ success: true, response: { user: foundUser } });
+            }).catch(rej => {
+                res.send({ success: false, response: reason2 });
+            });
         }
         utils_1.default.saveUsers();
         utils_1.default.saveAmazonItems();
