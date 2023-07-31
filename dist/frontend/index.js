@@ -10,9 +10,12 @@ const SESSION_USERNAME = document.getElementById("session-username-field");
 const SESSION_ITEMS = document.getElementById("session-items-field");
 const SUBMIT_USERNAME = document.getElementById("submit-username");
 const SUBMIT_PASSWORD = document.getElementById("submit-password");
-const SUBMIT_USER_BUTTON = document.getElementById("submit-login");
 const SUBMIT_URL = document.getElementById("#submit-url");
-const LOGIN_USERNAME_WARNING = document.getElementById("login-username-header-warning");
+
+const ADD_ITEM_BUTTON = document.getElementById("add-item-button");
+const ADD_ITEM_URL_WARNING = document.getElementById("add-item-header-warning");
+const LOGIN_BUTTON = document.getElementById("login-button");
+const LOGIN_WARNING = document.getElementById("login-header-warning");
 const AxiosInstance = window.axios.create({
     baseURL: baseURL,
     timeout: 5000,
@@ -103,15 +106,30 @@ function ServerGetItemsFromUser(username, password) {
     })
 }
 
-SUBMIT_USER_BUTTON.onclick = () => { 
+LOGIN_BUTTON.onclick = () => { 
     ServerAddUser(SUBMIT_USERNAME.value, SUBMIT_PASSWORD.value)
     .then(res => {
-        SESSION_USERNAME.innerHTML = res.data.response.username;
+        username = res.data.response.username;
+        password = res.data.response.password;
+        SUBMIT_USERNAME.innerHTML = "";
+        SUBMIT_PASSWORD.innerHTML = "";
+        SESSION_USERNAME.innerHTML = username;
+        SESSION_CONTAINER.classList.remove("container-neutral");
         SESSION_CONTAINER.classList.add("container-success");
     }).catch(rej => {
-        LOGIN_USERNAME_WARNING.classList.remove("hidden");
+        LOGIN_WARNING.classList.remove("hidden");
     });
 
 }
+
+ADD_ITEM_BUTTON.onclick = () => {
+    ServerAddItemToUser(username, password, SUBMIT_URL)
+    .then(res => {
+
+    }).catch(rej => {
+
+    })
+}
+
 
 console.log("Hello from frontend!");

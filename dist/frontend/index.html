@@ -7,8 +7,8 @@
         <script src="../index.js" defer></script>
     </head>
     <body class="bg-gray-100">
-        <div id="header">
-            <div id="session-container" class="container-1 w-1">
+        <div id="header" class="flex">
+            <div id="session-container" class="container-neutral w-1/2 flex-4">
                 <div id="session-header">CURRENT SESSION:</div>
                 <div>
                     <div></div>
@@ -20,30 +20,37 @@
                     <div id="session-items-field"></div>
                 </div>
             </div>
-        </div>
-        <div id="content">
-            <div id="login-container" class="container-2">
-                <div id="login-header">Login or Signup Here</div>
-                <div id="login-username-field">
-                    <div id="login-username-header">
-                        <div id="login-username-header-text">Username:</div>
-                        <div id="login-username-header-warning" class="text-red-600 hidden"></div>
+            <div id="login-container" class="container-neutral flex-8 text-center">
+                <div id="login-header" class="font-bold">LOGIN / SIGNUP</div>
+                <div id="login-field">
+                    <div id="login-header">
+                        <div id="login-header-text">Username: USER/PASS USER\/PASS</div>
+                        <div id="login-header-warning" class="text-red-600 hidden">INVALID USER\/PASS</div>
                     </div>
                     <input id="submit-username" type="text" class="bg-slate-100">
-
                 </div>
                 <div id="login-password-field">
                     <div>Password: </div>
                     <input id="submit-password" type="password">
                 </div>
                 <div id="login-button-field">
-                    <button id="submit-login" class="bg-slate-100">Submit</button>
+                    <button id="login-button" class="bg-slate-100">Submit</button>
                 </div>
             </div>
-            <div id="requestUrl-container" class="container-2">
-                <div id="requestUrl-header">Insert a URL here:</div>
-                <input id="submit-requestURL" type="text" class="bg-slate-100">
-                <button id="submit-requestURL">Submit</button>
+        </div>
+        <div id="content">
+
+            <div id="add-item-container" class="container-2">
+                <div id="add-item-header">
+                    <div id="add-item-header-text">Insert an Amazon URL here:</div>
+                    <div id="add-item-header-warning"></div>
+                </div>
+                <input id="submit-addItemRequest" type="text" class="bg-slate-100">
+                <button id="add-item-button">Submit</button>
+            </div>
+
+            <div id="items-table-container">
+
             </div>
         </div>
         <div></div>

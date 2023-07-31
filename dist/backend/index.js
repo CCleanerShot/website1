@@ -9,6 +9,4 @@ utils_1.default.configData = utils_1.default.loadConfig();
 utils_1.default.itemData = utils_1.default.loadAmazonItems();
 utils_1.default.userData = utils_1.default.loadUsers();
 localserver_1.default.start();
-const launch = Date.now();
-setTimeout(() => console.log(Date.now() - launch), 5000);
 //# sourceMappingURL=index.js.map
