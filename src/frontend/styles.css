@@ -28,8 +28,16 @@
         @apply bg-red-400;
     }
 
+    .container-item {
+        @apply border-2 border-black border-double
+    }
+
     .text-warning {
         @apply text-red-600 font-bold;
+    }
+
+    .text-bold-1 {
+        @apply font-bold
     }
 }
 

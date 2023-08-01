@@ -5,54 +5,61 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const cheerio_1 = require("cheerio");
 const axios_1 = __importDefault(require("axios"));
 const fs_1 = __importDefault(require("fs"));
+const errors_1 = __importDefault(require("./errors"));
 const configdata_1 = require("./structures/classes/configdata");
 const amazonitem_1 = require("./structures/classes/amazonitem");
 const userdata_1 = require("./structures/classes/userdata");
-const baseURL = "https://www.amazon.com/";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
 const CSS_SELECTOR_NAME = "span#productTitle";
 const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
-const AxiosInstance = axios_1.default.create({
-    baseURL: baseURL,
-    timeout: 5000,
-});
 const utils = {
     configData: new configdata_1.ConfigData(),
     itemData: [],
     userData: [],
     getBaseContents: (url) => {
         const splitURL = url.split(/\/+/);
+        const baseURL = splitURL[0] + splitURL[1] + "/";
         const paths = splitURL.slice(2).join("/") + "/";
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         };
+        const AxiosInstance = axios_1.default.create({
+            baseURL: baseURL,
+            timeout: 10000,
+        });
         return new Promise((res, rej) => {
-            AxiosInstance.get(paths, { headers: headers }).then((GETRes) => {
-                const $ = (0, cheerio_1.load)(GETRes.data);
+            AxiosInstance.get(paths, { headers: headers }).then((AxiosRes) => {
+                const $ = (0, cheerio_1.load)(AxiosRes.data);
                 if ($)
                     res($);
                 else
                     rej("Unable to turn response to CheerioAPI!");
-            }).catch((GETRej) => {
-                console.log("rejected!", GETRej);
+            }).catch((AxiosRej) => {
+                errors_1.default.LogErrorCause(AxiosRej);
                 rej("GET");
             });
         });
     },
     getSpecificContents: (url, cssSelector) => {
         const splitURL = url.split(/\/+/);
+        const baseURL = splitURL[0] + splitURL[1] + "/";
         const paths = splitURL.slice(2).join("/") + "/";
+        const AxiosInstance = axios_1.default.create({
+            baseURL: baseURL,
+            timeout: 10000,
+        });
         return new Promise((res, rej) => {
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
             };
-            const contents = AxiosInstance.get(paths, { headers: headers }).then((res) => {
+            const contents = AxiosInstance.get(paths, { headers: headers }).then((AxiosRes) => {
                 console.log("got a response!");
-                const $ = (0, cheerio_1.load)(res.data);
+                const $ = (0, cheerio_1.load)(AxiosRes.data);
                 return $(cssSelector).prop("innerHTML") || "";
-            }).catch((rej) => {
+            }).catch((AxiosRej) => {
+                errors_1.default.LogErrorCause(AxiosRej);
                 return "";
             });
             if (contents) {
@@ -94,9 +101,9 @@ const utils = {
             data.lastRequestTime = result.lastRequestTime;
             data.lastRequestWindow = result.lastRequestWindow;
             data.requestsMax = result.requestsMax;
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej);
+            console.log(err);
         });
         return data;
     },
@@ -113,9 +120,9 @@ const utils = {
                 const user = new userdata_1.UserData(i.username, i.password, i.items);
                 data.push(user);
             });
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej);
+            console.log(err);
         });
         return data;
     },
@@ -132,9 +139,9 @@ const utils = {
                 const item = new amazonitem_1.AmazonItem(i.name, i.url, i.prices, i.watchers, i.lastUpdated);
                 data.push(item);
             });
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej);
+            console.log(err);
         });
         return data;
     },
@@ -178,7 +185,7 @@ const utils = {
                     const newItem = new amazonitem_1.AmazonItem(name, url, [price]);
                     res(newItem);
                 }
-            }).catch(CheerioRej => {
+            }).catch(err => {
                 console.log("failed!");
                 return undefined;
             });
@@ -189,8 +196,8 @@ const utils = {
             utils.getSpecificContents(url, CSS_SELECTOR_PRICE)
                 .then(price => {
                 res(parseFloat(price));
-            }).catch(contentsRej => {
-                rej(contentsRej);
+            }).catch(err => {
+                rej(err);
             });
         });
     },

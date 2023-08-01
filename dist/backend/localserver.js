@@ -6,7 +6,6 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const utils_1 = __importDefault(require("./common/utils"));
 const userdata_1 = require("./common/structures/classes/userdata");
-const amazonitem_1 = require("./common/structures/classes/amazonitem");
 const PORT = 3000;
 const app = (0, express_1.default)();
 const localserver = {
@@ -18,22 +17,6 @@ localserver.start = () => {
     app.get("/", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/'`);
         res.send("Hello other person!");
-    });
-    app.post("/addItem", (req, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/addItem'`);
-        const name = req.body.name;
-        const url = req.body.url;
-        if (utils_1.default.findAmazonItem(name)) {
-            const reason = { reason: "Item already exists in the database!" };
-            res.send({ success: false, response: reason });
-        }
-        else {
-            const newItem = new amazonitem_1.AmazonItem(name, url);
-            utils_1.default.addAmazonItem(newItem);
-            utils_1.default.updateAmazonItem(newItem);
-            res.send({ success: true, response: newItem });
-        }
-        utils_1.default.saveAmazonItems();
     });
     app.post("/addUser", (req, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`);
@@ -89,8 +72,8 @@ localserver.start = () => {
         utils_1.default.saveUsers();
         utils_1.default.saveAmazonItems();
     });
-    app.get("/getItemsFromUser", (req, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/getTable'`);
+    app.post("/getItemsFromUser", (req, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/getItemsFromUser'`);
         const username = req.body.username;
         const password = req.body.password;
         const reason = { reason: "Invalid user!" };

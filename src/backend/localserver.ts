@@ -24,25 +24,6 @@ localserver.start = () => {
     });
 
 
-    app.post("/addItem", (req: any, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/addItem'`)
-        const name = req.body.name;
-        const url = req.body.url;
-
-        if(utils.findAmazonItem(name)) {
-            const reason = { reason: "Item already exists in the database!" }
-            res.send({success: false, response: reason})
-        } else {
-            const newItem = new AmazonItem(name, url);
-            utils.addAmazonItem(newItem);
-            utils.updateAmazonItem(newItem);
-            res.send({success: true, response: newItem});
-        }
-      
-        utils.saveAmazonItems();
-    });
-
-
     app.post("/addUser", (req: any, res) => {
         console.log(`${req.method} METHOD REQUEST AT '/addUser'`)
         const username = req.body.username;
@@ -104,8 +85,8 @@ localserver.start = () => {
     });
 
 
-    app.get("/getItemsFromUser", (req: any, res) => {
-        console.log(`${req.method} METHOD REQUEST AT '/getTable'`)
+    app.post("/getItemsFromUser", (req: any, res) => {
+        console.log(`${req.method} METHOD REQUEST AT '/getItemsFromUser'`)
         const username = req.body.username;
         const password = req.body.password;
         const reason = { reason: "Invalid user!" };

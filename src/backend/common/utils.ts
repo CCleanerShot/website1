@@ -2,20 +2,17 @@ import { Cheerio, CheerioAPI, load } from "cheerio";
 import axios from "axios";
 import fs from "fs";
 
+import errors from "./errors";
 import { ConfigData } from "./structures/classes/configdata";
 import { AmazonItem } from "./structures/classes/amazonitem";
 import { UserData } from "./structures/classes/userdata";
 
-const baseURL = "https://www.amazon.com/";
 const CONFIG_PATH = "./data/config.json";
 const ITEM_PATH = "./data/items.json";
 const USER_PATH = "./data/users.json";
 const CSS_SELECTOR_NAME = "span#productTitle";
 const CSS_SELECTOR_PRICE = "#tp_price_block_total_price_ww > .a-offscreen:first";
-const AxiosInstance = axios.create({
-    baseURL: baseURL,
-    timeout: 5000,
-});
+
 interface UtilInterface {
     configData: ConfigData;
     itemData: AmazonItem[];
@@ -52,23 +49,27 @@ const utils: UtilInterface = {
 
     getBaseContents: (url: string): Promise<CheerioAPI> => {
         const splitURL = url.split(/\/+/)
+        const baseURL = splitURL[0] + splitURL[1] + "/"
         const paths = splitURL.slice(2).join("/") + "/"
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
         }
-
+        const AxiosInstance = axios.create({
+            baseURL: baseURL,
+            timeout: 10000,
+        });
         return new Promise((res, rej) => {
             AxiosInstance.get(
                 paths, 
                 {headers: headers},
-            ).then((GETRes) => {
-                const $ = load(GETRes.data);
+            ).then((AxiosRes) => {
+                const $ = load(AxiosRes.data);
                 if($)
                     res($)
                 else
                     rej("Unable to turn response to CheerioAPI!");
-            }).catch((GETRej) => {
-                console.log("rejected!", GETRej);
+            }).catch((AxiosRej) => {
+                errors.LogErrorCause(AxiosRej);
                 rej("GET")
             });
         });
@@ -76,8 +77,13 @@ const utils: UtilInterface = {
 
     getSpecificContents: (url: string, cssSelector?: string): Promise<string> => {
         const splitURL = url.split(/\/+/)
+        const baseURL = splitURL[0] + splitURL[1] + "/"
         const paths = splitURL.slice(2).join("/") + "/"
 
+        const AxiosInstance = axios.create({
+            baseURL: baseURL,
+            timeout: 10000,
+        });
         return new Promise((res, rej) => {
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
@@ -85,11 +91,12 @@ const utils: UtilInterface = {
             const contents = AxiosInstance.get(
                 paths, 
                 {headers: headers},
-            ).then((res) => {
+            ).then((AxiosRes) => {
                 console.log("got a response!")
-                const $ = load(res.data);
+                const $ = load(AxiosRes.data);
                 return $(cssSelector).prop("innerHTML") || ""
-            }).catch((rej) => {
+            }).catch((AxiosRej) => {
+                errors.LogErrorCause(AxiosRej);
                 return "";
             });
         
@@ -141,9 +148,9 @@ const utils: UtilInterface = {
             data.lastRequestTime = result.lastRequestTime;
             data.lastRequestWindow = result.lastRequestWindow;
             data.requestsMax = result.requestsMax;
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej)
+            console.log(err)
 
         })
 
@@ -167,9 +174,9 @@ const utils: UtilInterface = {
                 const user = new UserData(i.username, i.password, i.items)
                 data.push(user)
             });
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej)
+            console.log(err)
         })
 
         return data;
@@ -192,9 +199,9 @@ const utils: UtilInterface = {
                 const item = new AmazonItem(i.name, i.url, i.prices, i.watchers, i.lastUpdated);
                 data.push(item)
             });
-        }).catch(rej => {
+        }).catch(err => {
             // nothing 
-            console.log(rej)
+            console.log(err)
         })
 
         return data;
@@ -252,7 +259,7 @@ const utils: UtilInterface = {
                     const newItem = new AmazonItem(name, url, [price]);
                     res(newItem);
                 }
-            }).catch(CheerioRej => {
+            }).catch(err => {
                 console.log("failed!");
                 return undefined;
             })
@@ -264,8 +271,8 @@ const utils: UtilInterface = {
             utils.getSpecificContents(url, CSS_SELECTOR_PRICE)
             .then(price => {
                 res(parseFloat(price));
-            }).catch(contentsRej => {
-                rej(contentsRej);
+            }).catch(err => {
+                rej(err);
             })
         })
     },
